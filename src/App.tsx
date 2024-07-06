@@ -3,7 +3,7 @@ import { useState, useReducer } from "react";
 import "./App.css";
 import Tasks from './Tasks';
 
-const ACTIONS = {
+export const ACTIONS = {
   ADD_TASK: 'add_task',
   ERROR_ENTRY: 'error_entry',
   TOGGLE_TASK: 'toggle_task',
@@ -24,14 +24,25 @@ function reducer (state, action) {
          error: action.payload
        }
      case ACTIONS.TOGGLE_TASK:
-       return state.tasks.map((task) => {
+        return {
+          ...state,
+          tasks: state.tasks.map((task) => {
          if (task.id === action.payload.id) {
            return {
          ...task, complete: !task.complete
        }
        }
-         
+       return task  
        })
+        }
+       /*return state.tasks.map((task) => {
+         if (task.id === action.payload.id) {
+           return {
+         ...task, complete: !task.complete
+       }
+       }
+       return task  
+       })*/
        
   }
 }
@@ -87,7 +98,7 @@ console.log(tasks);
       </form>
       <span className='error_message'>{error}</span>
       {tasks.map((task)=> (
-        <Tasks key={task.id} tasks={task} />
+        <Tasks key={task.id} tasks={task} dispatch={dispatch}/>
       ))}
       
       
