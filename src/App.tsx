@@ -1,10 +1,12 @@
-gimport { useState, useReducer } from "react";
+import { useState, useReducer } from "react";
 
 import "./App.css";
+import Tasks from './Tasks';
 
 const ACTIONS = {
   ADD_TASK: 'add_task',
-  
+  ERROR_ENTRY: 'error_entry',
+  TOGGLE_TASK: 'toggle_task',
 }
 
 
@@ -13,8 +15,24 @@ function reducer (state, action) {
   switch(action.type) {
     case ACTIONS.ADD_TASK:
       return {
-        tasks: [...state.task, newTask(action.payload.name)]
+        ...state,
+        tasks: [...state.tasks, newTask(action.payload.name)]
       }
+     case ACTIONS.ERROR_ENTRY:
+       return {
+         ...state,
+         error: action.payload
+       }
+     case ACTIONS.TOGGLE_TASK:
+       return state.tasks.map((task) => {
+         if (task.id === action.payload.id) {
+           return {
+         ...task, complete: !task.complete
+       }
+       }
+         
+       })
+       
   }
 }
 
@@ -30,24 +48,52 @@ function newTask(name) {
 function App() {
     const [name, setName] = useState('');
   
-  const [state, dispatch] = useReducer(reducer, {tasks: []})
-
-  function handleSubmit (e) {
+  const [state, dispatch] = useReducer(reducer, {tasks: [], error: ''})
+   const {error, tasks} = state;
+   
+   //handleSubmit function
+  function handleSubmit(e) {
      e.preventDefault();
-     dispatch({type: ACTIONS.ADD_TASK, payload: {name: name}})
+     if (name.length >= 3){
+       dispatch({type: ACTIONS.ADD_TASK, payload: {name: name}})
+     } else {
+      dispatch({type: ACTIONS.ERROR_ENTRY, payload: 'input must be more than 3 characters'}) 
+     }
+     
      setName('')
   }
+  
+  //handleChange function
+  
+  function handleChange(e) {
+    let input = e.target.value
+    setName(input);
+    if (input.length < 3 ) {
+      dispatch({type: ACTIONS.ERROR_ENTRY, payload: 'input must be more than 3 characters'})
+    } else {
+      dispatch({type: ACTIONS.ERROR_ENTRY, payload: null})
+    }
+  }
 
-console.log(text)
+console.log(tasks);
+
   return (
-    <>
-      <form onSubmit={handleSubmit}>
-      <input value={name} onChange={(e)=> setName(e.target.value)} />
-        <button>ADD</button>
+    <div className='container'>
+      <div className='card'>
+        <h1>Todo or Not</h1>
+        <form className='app_form' onSubmit={handleSubmit}>
+        <input type='text' value={name} placeholder='Enter a Task' onChange={handleChange} />
+        <button type='submit'>ADD</button>
       </form>
+      <span className='error_message'>{error}</span>
+      {tasks.map((task)=> (
+        <Tasks key={task.id} tasks={task} />
+      ))}
       
-      <span>{text}</span>
-    </>
+      
+      </div>
+      
+    </div>
   );
 }
 
